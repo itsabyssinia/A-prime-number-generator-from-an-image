@@ -1,0 +1,91 @@
+'''
+- read the image (store as a pixel matrix) DONE
+- change to grayscale DONE
+- resize DONE
+- change image to numpy array DONE
+- define askil characters  DONE
+- iterate over each pixel DONE
+- map each pixel to an askii character DONE 
+- create a new array with same size - i didn't create a new array, just changed the values of each pixel.
+- iterate over the array fill the array with the numeric code of the askii character 
+- write the array into a file
+
+'''
+import cv2
+import numpy as np
+
+def single_test(n, a):
+    exp = n - 1
+    while not exp & 1:
+        exp >>= 1
+        
+    if pow(a, exp, n) == 1:
+        return True
+        
+    while exp < n - 1:
+        if pow(a, exp, n) == n - 1:
+            return True
+            
+        exp <<= 1
+        
+    return False
+
+def miller_rabin(n, k=40):
+    if n < 2:
+        return False
+    if n in (2, 3):
+        return True
+    if n % 2 == 0:
+        return False
+    
+    for _ in range(k):
+        a = np.random.randint(2, n - 1)
+        if not single_test(n, a):
+            return False
+            
+    return True
+
+# Load and process the image
+image = cv2.imread('f.jpg', 0)
+height, width = image.shape[:2]
+ratio = width / height
+new_height = int(40 / ratio)
+resized = cv2.resize(image, (40, new_height))
+
+m_array = np.array(resized)
+ascii_chars = '81'
+ascii_art = ''
+
+for i in range(m_array.shape[0]):
+    for j in range(m_array.shape[1]):
+        index = int(m_array[i, j] / 128)
+        if index >= len(ascii_chars):
+            index = len(ascii_chars) - 1  
+        ascii_art += (ascii_chars[index])
+    ascii_art += '\n'  
+
+# Convert ascii_art to an integer by removing non-digit characters
+ascii_int = int(ascii_art.replace('\n', ''))
+
+# Debug: Print the integer representation
+
+# Check if the integer is prime
+if ascii_int <= 1:
+    print(f"{ascii_int} is not a prime number.")
+elif ascii_int in (2, 3):
+    print(f"{ascii_int} is a prime number.")
+else:
+    # Check for primes greater than 3
+    if ascii_int < 2:
+        print(f"{ascii_int} is not a prime number.")
+    else:
+        is_prime = miller_rabin(ascii_int)
+        if is_prime:
+            print(f"{ascii_int} is a prime number.")
+        else:
+            print(f"{ascii_int} is not a prime number.")
+
+# Save to file if needed
+filename = input('Enter file name: ')
+with open(filename, 'w') as file:
+    file.write(ascii_art)
